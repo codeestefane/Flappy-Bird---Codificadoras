@@ -1,26 +1,31 @@
 const canvas = document.querySelector("canvas");
 const ctx = canvas.getContext("2d");
-const janelaUsuario = document.querySelector("body");
 
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
-ctx.fillStyle = "#cb6ce6";
-ctx.fillRect(0, 0, canvas.width , canvas.height);
-
-let birdAxisY = canvas.height/2 - 14;
-let birdAxisX = canvas.width/2 - 20;
-let posicaoOriginalY = birdAxisY;
-let pontuacao = -1;
-
+let circleAxisY = canvas.height/2 - 14;
+let circleAxisX = canvas.width/2 - 20;
+let posicaoOriginalY = circleAxisY;
+let pontuacao;
 let start = false;
+let tempo = 0;
+let tempoPulo = 0;
+let inicio;
+let anima;
+let colisao;
+let alturaPipe = [];
+let posicaoPipe = [];
+let incremento = 10;
+let jump = false;
 
-function drawBird(i){
+desenhaTelaInicio();
+
+function drawCircle(){
     ctx.fillStyle = "white";
     if(colisao) ctx.fillStyle = "#F00";
     ctx.beginPath();
-    ctx.arc(birdAxisX, birdAxisY, 20, 0, 2 * Math.PI);
-    // ctx.stroke();
+    ctx.arc(circleAxisX, circleAxisY, 20, 0, 2 * Math.PI);
     ctx.fill();
 }
 
@@ -31,47 +36,34 @@ function drawBackground(){
         if(posicaoPipe[i] < -80) posicaoPipe[i] = canvas.width;
         ctx.beginPath();
         ctx.rect(posicaoPipe[i], canvas.height - alturaPipe[i], 80, alturaPipe[i]);
-        ctx.rect(posicaoPipe[i], 0, 80, 550 - alturaPipe[i]);
+        ctx.rect(posicaoPipe[i], 0, 80, 560 - alturaPipe[i]);
         ctx.stroke();
         ctx.fill();
         if(!colisao) posicaoPipe[i] = posicaoPipe[i] - 1;
     }
 }
 
-let incremento = 10;
-
-function effectFlyBird(){
-    if(birdAxisY > posicaoOriginalY + 10){
+function effectFlycircle(){
+    if(circleAxisY > posicaoOriginalY + 10){
         incremento = -10;
-    } else if(birdAxisY < posicaoOriginalY - 10){
+    } else if(circleAxisY < posicaoOriginalY - 10){
         incremento = 10;
     }
 
-    birdAxisY += incremento;
+    circleAxisY += incremento;
 }
 
-let indexBird = 0;
-
-let tempo = 0;
-let tempoPulo = 0;
-let inicio;
-let anima;
-let colisao = false;
-let alturaPipe = []
-let posicaoPipe = []
-desenhaTelaInicio();
-
 function desenhaTelaInicio(){
-    pontuacao = -1;
     start = false;
     colisao = false;
-    birdAxisY = canvas.height/2 - 14;
+    circleAxisY = canvas.height/2 - 14;
+
     inicio = setInterval(() => {
         atualizaCenario();
         ctx.fillStyle = "#cb6ce6";
         ctx.fillRect(0, 0, canvas.width , canvas.height);
-        drawBird(indexBird);
-        effectFlyBird();
+        drawCircle();
+        effectFlycircle();
         desenhaMensagemPressStart();
     
         if(start){
@@ -87,8 +79,8 @@ function desenhaMensagemPressStart(){
     ctx.fillText("Press space to start...", canvas.width/2 - 120, canvas.height/2 + 80);
 }
 
-function desenhaScore(color = "#FFF"){
-    ctx.fillStyle = color;
+function desenhaScore(){
+    ctx.fillStyle = "#FFF";
     if(colisao) ctx.fillStyle = "red";
     ctx.font = "24px Arial";
     ctx.fillText("Score: " + pontuacao, canvas.width - 200, 30);
@@ -96,29 +88,30 @@ function desenhaScore(color = "#FFF"){
 
 function iniciaJogo(){
     pontuacao = 0;
+
     anima = setInterval(() => {
         ctx.fillStyle = "#cb6ce6";
         ctx.fillRect(0, 0, canvas.width , canvas.height);
     
-        if(jump && !colisao) jumpBird();
-        else if(start) {
-            if(colisao) birdAxisY += 6;
-            else birdAxisY += 4;
-        }
+        if(jump) jumpCircle();
+        else if(colisao) circleAxisY += 6;
+        else circleAxisY += 4;
 
         if(!colisao){
-            drawBird(indexBird);
+            drawCircle();
             drawBackground();
         } else {
             drawBackground();
-            drawBird(indexBird);
+            drawCircle();
         }
 
         tempo += 10;
+
         desenhaScore();
         verificaColisao();
+        calculaPontuacao();
 
-        if(birdAxisY > canvas.height + 20){
+        if(circleAxisY > canvas.height + 20){
             clearInterval(anima);
             desenhaTelaInicio();
         }
@@ -127,39 +120,39 @@ function iniciaJogo(){
 }
 
 function atualizaCenario(){
-    for(let i = 0; i < 10; i++){
-        alturaPipe[i] = Math.round(Math.random() * (550 - 40) + 40);
+    for(let i = 0; i < 6; i++){
+        alturaPipe[i] = Math.round(Math.random() * (560));
         posicaoPipe[i] = canvas.width + 260 * i;
     }
 }
 
-function jumpBird(){
-    birdAxisY -= 4;
+function jumpCircle(){
+    circleAxisY -= 4;
     if(tempo - tempoPulo > 240){
-        tempoPulo = 0;
         jump = false;
+        tempoPulo = 0;
     }
 }
 
 function verificaColisao(){
     for(let i = 0; i < 6; i++){
-        if(posicaoPipe[i] < birdAxisX + 20 && birdAxisX - 20 < posicaoPipe[i] + 80 &&
-           (birdAxisY - 20 < 550 - alturaPipe[i] || (birdAxisY + 20 > canvas.height - alturaPipe[i]))
+        if(posicaoPipe[i] < circleAxisX + 20 && circleAxisX - 20 < posicaoPipe[i] + 80 &&
+           (circleAxisY - 20 < 560 - alturaPipe[i] || (circleAxisY + 20 > canvas.height - alturaPipe[i]))
         ){
+            jump = false;
             colisao = true;
-        }
-
-        if(birdAxisX === posicaoPipe[i] + 80 ){
-            pontuacao += 1; 
         }
     }
 }
 
-atualizaCenario();
+function calculaPontuacao(){
+    for(let i = 0; i < 6; i++){
+        pontuacao += 1;
+    }
+}
 
-let jump = false;
-
-janelaUsuario.addEventListener("keypress", (evento) => {
+// identifica quando o usuário aperta space: começa jogo/faz bolinha pular
+document.addEventListener("keypress", (evento) => {
     if(evento.keyCode === 32) {
         start = true;
         jump = true;
