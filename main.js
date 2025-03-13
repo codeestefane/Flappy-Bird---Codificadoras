@@ -88,7 +88,7 @@ function desenhaScore(){
 
 function iniciaJogo(){
     pontuacao = 0;
-
+    
     anima = setInterval(() => {
         ctx.fillStyle = "#cb6ce6";
         ctx.fillRect(0, 0, canvas.width , canvas.height);
@@ -147,7 +147,9 @@ function verificaColisao(){
 
 function calculaPontuacao(){
     for(let i = 0; i < 6; i++){
-        pontuacao += 1;
+        if(circleAxisX === posicaoPipe[i] + 80 ){
+            pontuacao += 1; 
+        }
     }
 }
 
