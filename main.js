@@ -19,7 +19,7 @@ flappyBirdSprite.src = "flappyBirdSprite.png";
 let start = false;
 
 function drawBird(i){
-    ctx.drawImage(flappyBirdSprite, 28 * i, 512 - 28, 28, 28, birdAxisX, birdAxisY, 96, 96);
+    ctx.drawImage(flappyBirdSprite, 28 * i, 512 - 28, 23, 23, birdAxisX, birdAxisY, 96, 96);
     // ctx.fillStyle = "red";
     // ctx.fillRect(birdAxisX, birdAxisY, 96, 96);
 }
@@ -85,21 +85,21 @@ let anima = setInterval(() => {
     if(jump) jumpBird();
     else if(start) birdAxisY += 4;
 
-    verificaColisao();
     if(colisao){
         birdAxisY = canvas.height - 26;
         birdAxisX = 26;
     }
-
+    
     drawBird(indexBird);
-
+    
     if(tempo % 120 === 0 && !start){
         if(!start) effectFlyBird();
         indexBird += 1;
     }
-
+    
     drawBackground();
     tempo += 10;
+    verificaColisao();
 }, 10);
 
 let alturaPipe = []
@@ -127,10 +127,10 @@ let colisao = false;
 
 function verificaColisao(){
     for(let i = 0; i < 6; i++){
-        if(posicaoPipe[i] <= birdAxisX + 28 && birdAxisX + 28 <= posicaoPipe[i] + 28 &&
-           ((0 <= birdAxisY + 28 && birdAxisY + 28 <= alturaPipe[i]) || (canvas.height - alturaPipe[i] <= birdAxisY + 28 && birdAxisY + 28 <= canvas.height))
+        if(posicaoPipe[i] <= birdAxisX + 80 && birdAxisX <= posicaoPipe[i] + 80 &&
+           (0 <= birdAxisY && birdAxisY <= 580 - alturaPipe[i])
         ){
-                console.log("aaaaaaa");
+                // console.log("aaaaaaa");
                 colisao = true;
                 clearInterval(anima);
         }
